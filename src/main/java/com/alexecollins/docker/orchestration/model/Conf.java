@@ -2,8 +2,12 @@ package com.alexecollins.docker.orchestration.model;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.apache.commons.lang.StringUtils;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -12,6 +16,8 @@ import static java.util.Collections.emptyMap;
 
 @SuppressWarnings("CanBeFinal")
 public class Conf {
+    private static ObjectMapper MAPPER = new ObjectMapper(new YAMLFactory());
+
     @JsonProperty(required = false)
     private String tag = null;
     @JsonProperty(required = false)
@@ -67,5 +73,9 @@ public class Conf {
 
     public Map<String, String> getVolumes() {
         return volumes;
+    }
+
+    public static Conf readFromFile(File confFile) throws IOException {
+        return confFile.length() > 0 ? MAPPER.readValue(confFile, Conf.class) : new Conf();
     }
 }

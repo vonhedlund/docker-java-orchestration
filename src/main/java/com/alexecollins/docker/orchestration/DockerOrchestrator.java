@@ -37,22 +37,21 @@ public class DockerOrchestrator {
 	private final DockerClient docker;
 	private final Repo repo;
 
-    private final FileOrchestrator fileOrchestrator;
 	private final Set<BuildFlag> buildFlags;
 
-    public DockerOrchestrator(DockerClient docker, File src, File workDir, File rootDir, String prefix, FileFilter filter, Properties properties) {
-        this(docker, new Repo(docker, prefix, src, properties), new FileOrchestrator(workDir, rootDir, filter, properties), EnumSet.noneOf(BuildFlag.class));
+    public DockerOrchestrator(DockerClient docker, File workDir, String prefix) {
+        this(docker, workDir,  prefix, EnumSet.noneOf(BuildFlag.class));
     }
 
-	public DockerOrchestrator(DockerClient docker, File src, File workDir, File rootDir, String prefix, FileFilter filter, Properties properties, Set<BuildFlag> buildFlags) {
-        this(docker, new Repo(docker, prefix, src, properties), new FileOrchestrator(workDir, rootDir, filter, properties), buildFlags);
+	public DockerOrchestrator(DockerClient docker, File workDir,  String prefix, Set<BuildFlag> buildFlags) {
+        this(docker, new Repo(docker, prefix, workDir), buildFlags);
 	}
 
-	public DockerOrchestrator(DockerClient docker, Repo repo, FileOrchestrator fileOrchestrator) {
-		this(docker,repo, fileOrchestrator, EnumSet.noneOf(BuildFlag.class));
+	public DockerOrchestrator(DockerClient docker, Repo repo) {
+		this(docker,repo, EnumSet.noneOf(BuildFlag.class));
 	}
 
-    public DockerOrchestrator(DockerClient docker, Repo repo, FileOrchestrator fileOrchestrator, Set<BuildFlag> buildFlags) {
+    public DockerOrchestrator(DockerClient docker, Repo repo, Set<BuildFlag> buildFlags) {
 	    if (docker == null) {
             throw new IllegalArgumentException("docker is null");
         }
@@ -64,7 +63,6 @@ public class DockerOrchestrator {
 
         this.docker = docker;
         this.repo = repo;
-        this.fileOrchestrator = fileOrchestrator;
 
 	    this.buildFlags = buildFlags;
     }
@@ -114,12 +112,8 @@ public class DockerOrchestrator {
 			throw new IllegalArgumentException("id is null");
 		}
 		LOGGER.info("Package " + id);
-		try {
-			build(prepare(id), id);
-		} catch (IOException e) {
-			throw new OrchestrationException(e);
-		}
 
+		build(repo.src(id), id);
 		snooze();
 	}
 
@@ -134,15 +128,6 @@ public class DockerOrchestrator {
 			throw new OrchestrationException(e);
 		}
 	}
-
-    private File prepare(Id id) throws IOException {
-        if (id == null) {
-			throw new IllegalArgumentException("id is null");
-		}
-        return fileOrchestrator.prepare(id, repo.src(id), repo.conf(id));
-    }
-
-
 
 
 	@SuppressWarnings(("DM_DEFAULT_ENCODING"))

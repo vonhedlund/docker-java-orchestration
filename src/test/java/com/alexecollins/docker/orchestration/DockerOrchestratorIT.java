@@ -45,9 +45,7 @@ public class DockerOrchestratorIT {
 
         orchestrator = new DockerOrchestrator(
                 docker,
-                src, workDir, projDir, "docker-java-orchestrator"
-                ,
-                DockerOrchestrator.DEFAULT_FILTER, DockerOrchestrator.DEFAULT_PROPERTIES);
+                src, "docker-java-orchestrator");
     }
 
     @Test

@@ -39,9 +39,7 @@ public class DockerOrchestratorUTest {
     @Mock private DockerClient dockerMock;
     @Mock private Repo repoMock;
     @Mock private File fileMock;
-    @Mock private File srcFileMock;
     @Mock private Id idMock;
-    @Mock private FileOrchestrator fileOrchestratorMock;
     @Mock private ClientResponse clientResponseMock;
     @Mock private Conf confMock;
     @Mock private CreateContainerResponse createContainerResponse;
@@ -60,9 +58,9 @@ public class DockerOrchestratorUTest {
 
     @Before
     public void setup () throws DockerException, IOException {
-        testObj = new DockerOrchestrator(dockerMock, repoMock, fileOrchestratorMock);
+        testObj = new DockerOrchestrator(dockerMock, repoMock);
 
-        when(repoMock.src(idMock)).thenReturn(srcFileMock);
+        when(repoMock.src(idMock)).thenReturn(fileMock);
         when(repoMock.conf(idMock)).thenReturn(confMock);
         when(repoMock.imageName(idMock)).thenReturn(IMAGE_NAME);
         when(repoMock.getImageId(idMock)).thenReturn(IMAGE_ID);
@@ -75,7 +73,6 @@ public class DockerOrchestratorUTest {
         when(repoMock.findContainer(idMock)).thenReturn(containerMock);
         when(containerMock.getId()).thenReturn(CONTAINER_ID);
 
-        when(fileOrchestratorMock.prepare(idMock, srcFileMock, confMock)).thenReturn(fileMock);
 
         when(repoMock.ids(false)).thenReturn(Arrays.asList(idMock));
 

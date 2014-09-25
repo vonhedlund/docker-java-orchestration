@@ -2,23 +2,23 @@ package com.alexecollins.docker.orchestration;
 
 import com.alexecollins.docker.orchestration.model.Conf;
 import com.alexecollins.docker.orchestration.model.Id;
-import com.alexecollins.docker.orchestration.util.Filters;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.DockerException;
 import com.github.dockerjava.api.NotFoundException;
-import com.github.dockerjava.api.command.InspectImageResponse;
-import com.github.dockerjava.api.command.ListImagesCmd;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.Image;
-import com.github.dockerjava.api.model.SearchItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import static java.util.Arrays.asList;
 
@@ -27,31 +27,28 @@ class Repo {
 
     private static final Logger LOG = LoggerFactory.getLogger(Repo.class);
 
-	private static ObjectMapper MAPPER = new ObjectMapper(new YAMLFactory());
 	private final DockerClient docker;
 	private final String prefix;
 	private final File src;
 	private final Map<Id, Conf> confs = new HashMap<Id, Conf>();
-    private final Properties properties;
 
     @SuppressWarnings("ConstantConditions")
-	Repo(DockerClient docker, String prefix, File src, Properties properties){
+	Repo(DockerClient docker, String prefix, File src){
+
         if (docker == null) {throw new IllegalArgumentException("docker is null");}
 		if (prefix == null) {throw new IllegalArgumentException("prefix is null");}
 		if (src == null) {throw new IllegalArgumentException("src is null");}
 		if (!src.isDirectory()) {throw new IllegalArgumentException("src " + src + " does not exist or is directory");}
-        if (properties == null) {throw new IllegalArgumentException("properties is null");}
 
 		this.docker = docker;
 		this.prefix = prefix;
 		this.src = src;
-        this.properties = properties;
 
 		if (src.isDirectory()) {
 			for (File file : src.listFiles()) {
 				final File confFile = new File(file, "conf.yml");
                 try {
-                    confs.put(new Id(file.getName()), confFile.length() > 0 ? MAPPER.readValue(confFile, Conf.class) : new Conf());
+                    confs.put(new Id(file.getName()), Conf.readFromFile(confFile));
                 } catch (IOException e) {
                    throw new OrchestrationException(e);
                 }
@@ -61,12 +58,9 @@ class Repo {
 
 	String imageName(Id id) {
 		Conf conf = conf(id);
-		return Filters.filter(
-                (conf != null && conf.hasTag())
+		return (conf != null && conf.hasTag())
                         ? conf.getTag()
-                        : prefix + "_" + id,
-                properties
-        );
+                        : prefix + "_" + id;
 	}
 
 	String containerName(Id id) {

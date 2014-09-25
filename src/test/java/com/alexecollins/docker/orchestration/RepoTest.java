@@ -18,7 +18,7 @@ public class RepoTest {
     @Before
     public void setUp() throws Exception {
         DockerClientImpl client = new DockerClientImpl("http://localhost:4240");
-        sut = new Repo(client, "test", new File("."), new Properties());
+        sut = new Repo(client, "test", new File("."));
     }
 
     @Test
